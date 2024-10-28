@@ -1,7 +1,7 @@
 /* eslint quote-props: off */
-const { assert } = require('chai')
-const { ERROR } = require('../../src/config')
-const types = require('../../src/types')
+const { assert } = require('chai');
+const { ERROR } = require('../../src/config');
+const types = require('../../src/types');
 
 // Constants
 
@@ -42,15 +42,15 @@ const TESTS = [
   ['default', '$10:000.00', ERROR],
   ['default', 'string', ERROR],
   ['default', '', ERROR],
-]
+];
 
 // Tests
 
 describe('castNumber', () => {
   TESTS.forEach((test) => {
-    const [format, value, result, options] = test
+    const [format, value, result, options] = test;
     it(`format "${format}" should cast "${value}" to "${result}"`, () => {
-      assert.deepEqual(types.castNumber(format, value, options), result)
-    })
-  })
-})
+      assert.deepEqual(types.castNumber(format, value, options), result);
+    });
+  });
+});

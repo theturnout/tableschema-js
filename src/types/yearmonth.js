@@ -1,38 +1,38 @@
-const isArray = require('lodash/isArray')
-const isString = require('lodash/isString')
-const { ERROR } = require('../config')
+const isArray = require('lodash/isArray');
+const isString = require('lodash/isString');
+const { ERROR } = require('../config');
 
 // Module API
 
 function castYearmonth(format, value) {
   if (isArray(value)) {
     if (value.length !== 2) {
-      return ERROR
+      return ERROR;
     }
   } else if (isString(value)) {
     try {
-      const items = value.split('-')
+      const items = value.split('-');
       if (items.length !== 2) {
-        return ERROR
+        return ERROR;
       }
-      const year = parseInt(items[0], 10)
-      const month = parseInt(items[1], 10)
+      const year = parseInt(items[0], 10);
+      const month = parseInt(items[1], 10);
       if (!year || !month) {
-        return ERROR
+        return ERROR;
       }
       if (month < 1 || month > 12) {
-        return ERROR
+        return ERROR;
       }
-      value = [year, month]
+      value = [year, month];
     } catch (error) {
-      return ERROR
+      return ERROR;
     }
   } else {
-    return ERROR
+    return ERROR;
   }
-  return value
+  return value;
 }
 
 module.exports = {
   castYearmonth,
-}
+};

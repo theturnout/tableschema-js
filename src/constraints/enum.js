@@ -2,14 +2,14 @@
 
 function checkEnum(constraint, value) {
   if (value === null) {
-    return true
+    return true;
   }
   if (constraint.includes(value)) {
-    return true
+    return true;
   }
-  return false
+  return false;
 }
 
 module.exports = {
   checkEnum,
-}
+};

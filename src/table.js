@@ -1,21 +1,21 @@
-const fs = require('fs')
-const axios = require('axios')
-const csv = require('csv-parse/lib/es5')
-const through2 = require('through2')
-const { Readable, PassThrough } = require('stream')
-const zip = require('lodash/zip')
-const isArray = require('lodash/isArray')
-const isEqual = require('lodash/isEqual')
-const isMatch = require('lodash/isMatch')
-const isInteger = require('lodash/isInteger')
-const isFunction = require('lodash/isFunction')
-const zipObject = require('lodash/zipObject')
-const S2A = require('stream-to-async-iterator').default
-const CSVSniffer = require('csv-sniffer')()
-const { TableSchemaError } = require('./errors')
-const { Schema } = require('./schema')
-const helpers = require('./helpers')
-const config = require('./config')
+const fs = require('fs');
+const axios = require('axios');
+const csv = require('csv-parse');
+const through2 = require('through2');
+const { Readable, PassThrough } = require('stream');
+const zip = require('lodash/zip');
+const isArray = require('lodash/isArray');
+const isEqual = require('lodash/isEqual');
+const isMatch = require('lodash/isMatch');
+const isInteger = require('lodash/isInteger');
+const isFunction = require('lodash/isFunction');
+const zipObject = require('lodash/zipObject');
+const S2A = require('stream-to-async-iterator').default;
+const CSVSniffer = require('csv-sniffer')();
+const { TableSchemaError } = require('./errors');
+const { Schema } = require('./schema');
+const helpers = require('./helpers');
+const config = require('./config');
 
 // Module API
 
@@ -65,7 +65,7 @@ class Table {
   ) {
     // Load schema
     if (schema && !(schema instanceof Schema)) {
-      schema = await Schema.load(schema, { strict })
+      schema = await Schema.load(schema, { strict });
     }
 
     return new Table(source, {
@@ -75,8 +75,8 @@ class Table {
       headers,
       format,
       encoding,
-      ...parserOptions,
-    })
+      parserOptions
+    });
   }
 
   /**
@@ -85,7 +85,7 @@ class Table {
    * @returns {string[]} data source headers
    */
   get headers() {
-    return this._headers
+    return this._headers;
   }
 
   /**
@@ -94,7 +94,7 @@ class Table {
    * @returns {Schema} table schema instance
    */
   get schema() {
-    return this._schema
+    return this._schema;
   }
 
   /**
@@ -130,60 +130,60 @@ class Table {
     stream = false,
     forceCast = false,
   } = {}) {
-    const source = this._source
+    const source = this._source;
 
     // Prepare unique checks
-    let uniqueFieldsCache = {}
+    let uniqueFieldsCache = {};
     if (cast) {
       if (this.schema) {
-        uniqueFieldsCache = createUniqueFieldsCache(this.schema)
+        uniqueFieldsCache = createUniqueFieldsCache(this.schema);
       }
     }
-
+    
     // Get row stream
-    const rowStream = await createRowStream(source, this._encoding, this._parserOptions)
-
+    const rowStream = await createRowStream(source, this._encoding, this._parserOptions);
+  
     // Get table row stream
-    let rowNumber = 0
+    let rowNumber = 0;
     const tableRowStream = rowStream.pipe(
       through2.obj((row, _encoding, done) => {
-        rowNumber += 1
+        rowNumber += 1;
 
         // Get headers
         if (rowNumber === this._headersRow) {
-          this._headers = row
-          return done()
+          this._headers = row;
+          return done();
         }
 
         // Check headers
         if (cast) {
           if (this.schema && this.headers) {
-            const lowerHeaders = (hs) => hs.map((h) => h.toLocaleLowerCase())
-            const tableHeaders = this._caseSensitive ? this.headers : lowerHeaders(this.headers)
+            const lowerHeaders = (hs) => hs.map((h) => h.toLocaleLowerCase());
+            const tableHeaders = this._caseSensitive ? this.headers : lowerHeaders(this.headers);
             const schemaHeaders = this._caseSensitive
               ? this.schema.fieldNames
-              : lowerHeaders(this.schema.fieldNames)
+              : lowerHeaders(this.schema.fieldNames);
 
             if (!isEqual(tableHeaders, schemaHeaders)) {
               const error = new TableSchemaError(
                 'The column header names do not match the field names in the schema'
-              )
-              error.rowNumber = rowNumber
-              error.headerNames = this.headers
-              error.fieldNames = this.schema.fieldNames
+              );
+              error.rowNumber = rowNumber;
+              error.headerNames = this.headers;
+              error.fieldNames = this.schema.fieldNames;
               const missingFields = this.schema.fieldNames.filter(
                 (name) => !this.headers.includes(name)
-              )
+              );
               if (missingFields.length > 0) {
                 error.errors.push(
                   ...missingFields.map(
                     (fieldName) =>
                       new TableSchemaError(`The column header name '${fieldName}' is missing`)
                   )
-                )
+                );
               }
-              if (forceCast) return done(null, error)
-              return done(error)
+              if (forceCast) return done(null, error);
+              return done(error);
             }
           }
         }
@@ -192,14 +192,14 @@ class Table {
         if (cast) {
           if (this.schema) {
             try {
-              row = this.schema.castRow(row, { failFast: false })
+              row = this.schema.castRow(row, { failFast: false });
             } catch (error) {
-              error.rowNumber = rowNumber
+              error.rowNumber = rowNumber;
               error.errors.forEach((error) => {
-                error.rowNumber = rowNumber
-              })
-              if (forceCast) return done(null, error)
-              return done(error)
+                error.rowNumber = rowNumber;
+              });
+              if (forceCast) return done(null, error);
+              return done(error);
             }
           }
         }
@@ -207,19 +207,19 @@ class Table {
         // Check unique
         if (cast) {
           for (const [indexes, cache] of Object.entries(uniqueFieldsCache)) {
-            const splitIndexes = indexes.split(',').map((index) => parseInt(index, 10))
-            const values = row.filter((value, index) => splitIndexes.includes(index))
+            const splitIndexes = indexes.split(',').map((index) => parseInt(index, 10));
+            const values = row.filter((value, index) => splitIndexes.includes(index));
             if (!values.every((value) => value === null)) {
               if (cache.data.has(values.toString())) {
                 const error = new TableSchemaError(
                   `Row ${rowNumber} has an unique constraint ` +
                     `violation in column "${cache.name}"`
-                )
-                error.rowNumber = rowNumber
-                if (forceCast) return done(null, error)
-                return done(error)
+                );
+                error.rowNumber = rowNumber;
+                if (forceCast) return done(null, error);
+                return done(error);
               }
-              cache.data.add(values.toString())
+              cache.data.add(values.toString());
             }
           }
         }
@@ -228,14 +228,14 @@ class Table {
         if (relations) {
           if (this.schema) {
             for (const foreignKey of this.schema.foreignKeys) {
-              row = resolveRelations(row, this.headers, relations, foreignKey)
+              row = resolveRelations(row, this.headers, relations, foreignKey);
               if (row === null) {
                 const error = new TableSchemaError(
                   `Foreign key "${foreignKey.fields}" violation in row ${rowNumber}`
-                )
-                error.rowNumber = rowNumber
-                if (forceCast) return done(null, error)
-                return done(error)
+                );
+                error.rowNumber = rowNumber;
+                if (forceCast) return done(null, error);
+                return done(error);
               }
             }
           }
@@ -243,28 +243,28 @@ class Table {
 
         // Form row
         if (keyed) {
-          row = zipObject(this.headers, row)
+          row = zipObject(this.headers, row);
         } else if (extended) {
-          row = [rowNumber, this.headers, row]
+          row = [rowNumber, this.headers, row];
         }
 
-        done(null, row)
+        done(null, row);
       })
-    )
+    );
 
     // Handle csv errors
     rowStream.on('error', () => {
-      const error = new TableSchemaError('Data source parsing error')
-      tableRowStream.emit('error', error)
-    })
+      const error = new TableSchemaError('Data source parsing error');
+      tableRowStream.emit('error', error);
+    });
 
     // Return stream
     if (stream) {
-      return tableRowStream
+      return tableRowStream;
     }
 
     // Return iterator
-    return Symbol.asyncIterator in tableRowStream ? tableRowStream : new S2A(tableRowStream)
+    return Symbol.asyncIterator in tableRowStream ? tableRowStream : new S2A(tableRowStream);
   }
 
   /**
@@ -279,19 +279,19 @@ class Table {
    *  - `[rowNumber, [header1, header2], [value1, value2]]` - extended
    */
   async read({ keyed, extended, cast = true, relations = false, limit, forceCast = false } = {}) {
-    const stream = await this.iter({ keyed, extended, cast, relations, forceCast, stream: true })
-    const rows = []
-    let count = 0
+    const stream = await this.iter({ keyed, extended, cast, relations, forceCast, stream: true });
+    const rows = [];
+    let count = 0;
     return new Promise((resolve, reject) => {
       stream.on('data', (row) => {
-        if (limit && count >= limit) return stream.destroy()
-        rows.push(row)
-        count += 1
-      })
-      stream.on('error', reject)
-      stream.on('close', () => resolve(rows))
-      stream.on('end', () => resolve(rows))
-    })
+        if (limit && count >= limit) return stream.destroy();
+        rows.push(row);
+        count += 1;
+      });
+      stream.on('error', reject);
+      stream.on('close', () => resolve(rows));
+      stream.on('end', () => resolve(rows));
+    });
   }
 
   /**
@@ -305,16 +305,16 @@ class Table {
   async infer({ limit = 100 } = {}) {
     if (!this._schema || !this._headers) {
       // Headers
-      const sample = await this.read({ limit, cast: false })
+      const sample = await this.read({ limit, cast: false });
 
       // Schema
       if (!this.schema) {
-        const schema = new Schema()
-        schema.infer(sample, { headers: this.headers })
-        this._schema = new Schema(schema.descriptor, { strict: this._strict })
+        const schema = new Schema();
+        schema.infer(sample, { headers: this.headers });
+        this._schema = new Schema(schema.descriptor, { strict: this._strict });
       }
     }
-    return this._schema.descriptor
+    return this._schema.descriptor;
   }
 
   /**
@@ -325,9 +325,9 @@ class Table {
    * @returns {Boolean} true on success
    */
   async save(target) {
-    const rowStream = await this.iter({ keyed: true, stream: true })
-    const textStream = rowStream.pipe(csv.stringify({ header: true }))
-    textStream.pipe(fs.createWriteStream(target))
+    const rowStream = await this.iter({ keyed: true, stream: true });
+    const textStream = rowStream.pipe(csv.stringify({ header: true }));
+    textStream.pipe(fs.createWriteStream(target));
   }
 
   // Private
@@ -346,25 +346,25 @@ class Table {
   ) {
     // Not supported formats
     if (!['csv'].includes(format)) {
-      throw new TableSchemaError(`Tabular format "${format}" is not supported`)
+      throw new TableSchemaError(`Tabular format "${format}" is not supported`);
     }
 
     // Set attributes
-    this._source = source
-    this._schema = schema
-    this._strict = strict
-    this._caseSensitive = caseSensitive
-    this._format = format
-    this._encoding = encoding
-    this._parserOptions = parserOptions
+    this._source = source;
+    this._schema = schema;
+    this._strict = strict;
+    this._caseSensitive = caseSensitive;
+    this._format = format;
+    this._encoding = encoding;
+    this._parserOptions = parserOptions;
 
     // Headers
-    this._headers = null
-    this._headersRow = null
+    this._headers = null;
+    this._headersRow = null;
     if (isArray(headers)) {
-      this._headers = headers
+      this._headers = headers;
     } else if (isInteger(headers)) {
-      this._headersRow = headers
+      this._headersRow = headers;
     }
   }
 }
@@ -372,57 +372,57 @@ class Table {
 // Internal
 
 async function createRowStream(source, encoding, parserOptions) {
-  const parser = csv({ ltrim: true, relax_column_count: true, ...parserOptions })
-  let stream
+  const parser = csv({ ltrim: true, relax_column_count: true, ...parserOptions });
+  let stream;
 
   // Stream factory
   if (isFunction(source)) {
-    stream = source()
+    stream = source();
 
     // Node stream
   } else if (source.readable) {
-    stream = source
+    stream = source;
 
     // Inline source
   } else if (isArray(source)) {
-    stream = new Readable({ objectMode: true })
-    for (const row of source) stream.push(row)
-    stream.push(null)
+    stream = new Readable({ objectMode: true });
+    for (const row of source) stream.push(row);
+    stream.push(null);
 
     // Remote source
     // For now only utf-8 encoding is supported:
     // https://github.com/axios/axios/issues/332
   } else if (helpers.isRemotePath(source)) {
     if (config.IS_BROWSER) {
-      const response = await axios.get(source)
-      stream = new Readable()
-      stream.push(response.data)
-      stream.push(null)
+      const response = await axios.get(source);
+      stream = new Readable();
+      stream.push(response.data);
+      stream.push(null);
     } else {
-      const response = await axios.get(source, { responseType: 'stream' })
-      stream = response.data
+      const response = await axios.get(source, { responseType: 'stream' });
+      stream = response.data;
     }
 
     // Local source
   } else {
     if (config.IS_BROWSER) {
-      throw new TableSchemaError('Local paths are not supported in the browser')
+      throw new TableSchemaError('Local paths are not supported in the browser');
     } else {
-      stream = fs.createReadStream(source)
-      stream.setEncoding(encoding)
+      stream = fs.createReadStream(source);
+      stream.setEncoding(encoding);
     }
   }
 
   // Parse CSV unless it's already parsed
   if (!isArray(source)) {
-    if (parserOptions.delimiter === undefined) {
-      const csvDelimiterDetector = createCsvDelimiterDetector(parser)
-      stream.pipe(csvDelimiterDetector)
+    if (parserOptions && parserOptions.delimiter === undefined) {
+      const csvDelimiterDetector = createCsvDelimiterDetector(parser);
+      stream.pipe(csvDelimiterDetector);
     }
-    stream = stream.pipe(parser)
+    stream = stream.pipe(parser);
   }
 
-  return stream
+  return stream;
 }
 
 /**
@@ -437,37 +437,42 @@ async function createRowStream(source, encoding, parserOptions) {
  * @returns {module:stream/PassThrough}
  */
 function createCsvDelimiterDetector(csvParser) {
-  const detector = PassThrough()
-  const sniffer = new CSVSniffer()
-  let done = false
+  const detector = PassThrough();
+  const sniffer = new CSVSniffer();
+  let done = false;
 
   detector.on('data', (chunk) => {
     if (!done) {
-      let delimiter = sniffer.sniff(chunk.toString()).delimiter || ','
-      if (delimiter.match(/[a-zA-Z0-9+]/)) delimiter = ','
-      csvParser.options.delimiter = Buffer.from(delimiter, 'utf-8')
-      done = true
-    }
-  })
+      let sniffed = sniffer.sniff(chunk.toString());
+      let delimiter = (sniffed && sniffed.delimiter) || ',';
+      
+      if (delimiter.match(/[a-zA-Z0-9+]/)) {
+        delimiter = ',';
+      }
 
-  return detector
+      csvParser.options.delimiter = Buffer.from(delimiter, 'utf-8');
+      done = true;
+    }
+  });
+
+  return detector;
 }
 
 function createUniqueFieldsCache(schema) {
-  const primaryKeyIndexes = []
-  const cache = {}
+  const primaryKeyIndexes = [];
+  const cache = {};
 
   // Unique
   for (const [index, field] of schema.fields.entries()) {
-    if (!field) continue
+    if (!field) continue;
     if (schema.primaryKey.includes(field.name)) {
-      primaryKeyIndexes.push(index)
+      primaryKeyIndexes.push(index);
     }
     if (field.constraints.unique) {
       cache[index.toString()] = {
         name: field.name,
         data: new Set(),
-      }
+      };
     }
   }
 
@@ -476,29 +481,29 @@ function createUniqueFieldsCache(schema) {
     cache[primaryKeyIndexes.join(',')] = {
       name: schema.primaryKey.join(', '),
       data: new Set(),
-    }
+    };
   }
 
-  return cache
+  return cache;
 }
 
 function resolveRelations(row, headers, relations, foreignKey) {
   // Prepare helpers - needed data structures
-  const keyedRow = new Map(zip(headers, row))
-  const fields = zip(foreignKey.fields, foreignKey.reference.fields)
-  const reference = relations[foreignKey.reference.resource]
+  const keyedRow = new Map(zip(headers, row));
+  const fields = zip(foreignKey.fields, foreignKey.reference.fields);
+  const reference = relations[foreignKey.reference.resource];
   if (!reference) {
-    return row
+    return row;
   }
 
   // Collect values - valid if all null
-  let valid = true
-  const values = {}
+  let valid = true;
+  const values = {};
   for (const [field, refField] of fields) {
     if (field && refField) {
-      values[refField] = keyedRow.get(field)
+      values[refField] = keyedRow.get(field);
       if (keyedRow.get(field) !== null) {
-        valid = false
+        valid = false;
       }
     }
   }
@@ -507,18 +512,18 @@ function resolveRelations(row, headers, relations, foreignKey) {
   if (!valid) {
     for (const refValues of reference) {
       if (isMatch(refValues, values)) {
-        for (const [field] of fields) keyedRow.set(field, refValues)
-        valid = true
-        break
+        for (const [field] of fields) keyedRow.set(field, refValues);
+        valid = true;
+        break;
       }
     }
   }
 
-  return valid ? Array.from(keyedRow.values()) : null
+  return valid ? Array.from(keyedRow.values()) : null;
 }
 
 // System
 
 module.exports = {
   Table,
-}
+};

@@ -1,19 +1,19 @@
-const fs = require('fs')
-const moment = require('moment')
-const min = require('lodash/min')
-const zip = require('lodash/zip')
-const isArray = require('lodash/isArray')
-const isEqual = require('lodash/isEqual')
-const isString = require('lodash/isString')
-const cloneDeep = require('lodash/cloneDeep')
-const isBoolean = require('lodash/isBoolean')
-const upperFirst = require('lodash/upperFirst')
-const { TableSchemaError } = require('./errors')
-const { Profile } = require('./profile')
-const helpers = require('./helpers')
-const config = require('./config')
-const { Field } = require('./field')
-const types = require('./types')
+const fs = require('fs');
+const moment = require('moment');
+const min = require('lodash/min');
+const zip = require('lodash/zip');
+const isArray = require('lodash/isArray');
+const isEqual = require('lodash/isEqual');
+const isString = require('lodash/isString');
+const cloneDeep = require('lodash/cloneDeep');
+const isBoolean = require('lodash/isBoolean');
+const upperFirst = require('lodash/upperFirst');
+const { TableSchemaError } = require('./errors');
+const { Profile } = require('./profile');
+const helpers = require('./helpers');
+const config = require('./config');
+const { Field } = require('./field');
+const types = require('./types');
 
 // Module API
 
@@ -40,9 +40,9 @@ class Schema {
    */
   static async load(descriptor = {}, { strict = false, caseInsensitiveHeaders = false } = {}) {
     // Process descriptor
-    descriptor = await helpers.retrieveDescriptor(descriptor)
+    descriptor = await helpers.retrieveDescriptor(descriptor);
 
-    return new Schema(descriptor, { strict, caseInsensitiveHeaders })
+    return new Schema(descriptor, { strict, caseInsensitiveHeaders });
   }
 
   /**
@@ -53,7 +53,7 @@ class Schema {
    * @returns {Boolean} returns validation status
    */
   get valid() {
-    return this._errors.length === 0
+    return this._errors.length === 0;
   }
 
   /**
@@ -64,7 +64,7 @@ class Schema {
    * @returns {Error[]} returns validation errors
    */
   get errors() {
-    return this._errors
+    return this._errors;
   }
 
   /**
@@ -74,7 +74,7 @@ class Schema {
    */
   get descriptor() {
     // Never use this.descriptor inside this class (!!!)
-    return this._nextDescriptor
+    return this._nextDescriptor;
   }
 
   /**
@@ -83,8 +83,8 @@ class Schema {
    * @returns {string[]} schema primary key
    */
   get primaryKey() {
-    const primaryKey = this._currentDescriptor.primaryKey || []
-    return isArray(primaryKey) ? primaryKey : [primaryKey]
+    const primaryKey = this._currentDescriptor.primaryKey || [];
+    return isArray(primaryKey) ? primaryKey : [primaryKey];
   }
 
   /**
@@ -93,20 +93,20 @@ class Schema {
    * @returns {Object[]} schema foreign keys
    */
   get foreignKeys() {
-    const foreignKeys = this._currentDescriptor.foreignKeys || []
+    const foreignKeys = this._currentDescriptor.foreignKeys || [];
     for (const key of foreignKeys) {
-      key.fields = key.fields || []
-      key.reference = key.reference || {}
-      key.reference.resource = key.reference.resource || ''
-      key.reference.fields = key.reference.fields || []
+      key.fields = key.fields || [];
+      key.reference = key.reference || {};
+      key.reference.resource = key.reference.resource || '';
+      key.reference.fields = key.reference.fields || [];
       if (!isArray(key.fields)) {
-        key.fields = [key.fields]
+        key.fields = [key.fields];
       }
       if (!isArray(key.reference.fields)) {
-        key.reference.fields = [key.reference.fields]
+        key.reference.fields = [key.reference.fields];
       }
     }
-    return foreignKeys
+    return foreignKeys;
   }
 
   /**
@@ -115,7 +115,7 @@ class Schema {
    * @returns {Field[]} schema fields
    */
   get fields() {
-    return this._fields
+    return this._fields;
   }
 
   /**
@@ -124,7 +124,7 @@ class Schema {
    * @returns {string[]} schema field names
    */
   get fieldNames() {
-    return this._fields.map((field) => field.name)
+    return this._fields.map((field) => field.name);
   }
 
   /**
@@ -134,18 +134,18 @@ class Schema {
    * @returns {(Field|null)} field instance if exists
    */
   getField(fieldName, { index = 0 } = {}) {
-    const name = fieldName
+    const name = fieldName;
     const fields = this._fields.filter((field) => {
-      if (this._caseInsensitiveHeaders) return field.name.toLowerCase === name.toLowerCase
-      return field.name === name
-    })
+      if (this._caseInsensitiveHeaders) return field.name.toLowerCase === name.toLowerCase;
+      return field.name === name;
+    });
     if (!fields.length) {
-      return null
+      return null;
     }
     if (!index) {
-      return fields[0]
+      return fields[0];
     }
-    return this._fields[index]
+    return this._fields[index];
   }
 
   /**
@@ -155,10 +155,10 @@ class Schema {
    * @returns {Field} added field instance
    */
   addField(descriptor) {
-    if (!this._currentDescriptor.fields) this._currentDescriptor.fields = []
-    this._currentDescriptor.fields.push(descriptor)
-    this._build()
-    return this._fields[this._fields.length - 1]
+    if (!this._currentDescriptor.fields) this._currentDescriptor.fields = [];
+    this._currentDescriptor.fields.push(descriptor);
+    this._build();
+    return this._fields[this._fields.length - 1];
   }
 
   /**
@@ -168,13 +168,13 @@ class Schema {
    * @returns {(Field|null)} removed field instance if exists
    */
   removeField(name) {
-    const field = this.getField(name)
+    const field = this.getField(name);
     if (field) {
-      const predicat = (field) => field.name !== name
-      this._currentDescriptor.fields = this._currentDescriptor.fields.filter(predicat)
-      this._build()
+      const predicat = (field) => field.name !== name;
+      this._currentDescriptor.fields = this._currentDescriptor.fields.filter(predicat);
+      this._build();
     }
-    return field
+    return field;
   }
 
   /**
@@ -185,37 +185,37 @@ class Schema {
    * @returns {Array[]} cast data row
    */
   castRow(row, { failFast = false } = {}) {
-    const result = []
-    const errors = []
+    const result = [];
+    const errors = [];
 
     // Check row length
     if (row.length !== this.fields.length) {
       throw new TableSchemaError(
         `The row with ${row.length} values does not match ` +
           `the ${this.fields.length} fields in the schema`
-      )
+      );
     }
 
     // Cast row
     for (const [index, [field, value]] of zip(this.fields, row).entries()) {
       try {
         // Recreate the failing field to throw proper error message
-        if (!field) new Field(this._currentDescriptor.fields[index]) // eslint-disable-line
-        result.push(field.castValue(value))
+        if (!field) new Field(this._currentDescriptor.fields[index]);
+        result.push(field.castValue(value));
       } catch (error) {
-        error.columnNumber = index + 1
-        if (failFast) throw error
-        errors.push(error)
+        error.columnNumber = index + 1;
+        if (failFast) throw error;
+        errors.push(error);
       }
     }
 
     // Raise errors
     if (errors.length) {
-      const message = `There are ${errors.length} type and format mismatch errors (see 'error.errors')`
-      throw new TableSchemaError(message, errors)
+      const message = `There are ${errors.length} type and format mismatch errors (see 'error.errors')`;
+      throw new TableSchemaError(message, errors);
     }
 
-    return result
+    return result;
   }
 
   /**
@@ -229,47 +229,47 @@ class Schema {
    * @returns {Object} Table Schema descriptor
    */
   infer(rows, { headers = 1 } = {}) {
-    rows = cloneDeep(rows)
+    rows = cloneDeep(rows);
 
     // Get headers
     if (!isArray(headers)) {
-      let headersRow = headers
+      let headersRow = headers;
       for (;;) {
-        headersRow -= 1
-        headers = rows.shift()
-        if (!headersRow) break
+        headersRow -= 1;
+        headers = rows.shift();
+        if (!headersRow) break;
       }
     }
 
     // Get deafult descriptor
     const descriptor = {
       fields: headers.map((header) => {
-        return { name: header, type: 'any', format: 'default' }
+        return { name: header, type: 'any', format: 'default' };
       }),
-    }
+    };
 
     // Get inferred descriptor
-    const threshold = min([rows.length, config.INFER_THRESHOLD])
+    const threshold = min([rows.length, config.INFER_THRESHOLD]);
     for (const [fieldIndex, field] of descriptor.fields.entries()) {
-      const counter = {}
+      const counter = {};
       for (const [rowIndex, row] of rows.entries()) {
-        const inspectionCount = rowIndex + 1
-        const inspection = JSON.stringify(inspectValue(row[fieldIndex]))
-        counter[inspection] = (counter[inspection] || 0) + 1
+        const inspectionCount = rowIndex + 1;
+        const inspection = JSON.stringify(inspectValue(row[fieldIndex]));
+        counter[inspection] = (counter[inspection] || 0) + 1;
         if (inspectionCount >= threshold) {
           if (counter[inspection] / inspectionCount >= config.INFER_CONFIDENCE) {
-            Object.assign(field, JSON.parse(inspection))
-            break
+            Object.assign(field, JSON.parse(inspection));
+            break;
           }
         }
       }
     }
 
     // Set descriptor
-    this._currentDescriptor = descriptor
-    this._build()
+    this._currentDescriptor = descriptor;
+    this._build();
 
-    return descriptor
+    return descriptor;
   }
 
   /**
@@ -293,11 +293,11 @@ class Schema {
    * @returns {Boolean} returns true on success and false if not modified
    */
   commit({ strict } = {}) {
-    if (isBoolean(strict)) this._strict = strict
-    else if (isEqual(this._currentDescriptor, this._nextDescriptor)) return false
-    this._currentDescriptor = cloneDeep(this._nextDescriptor)
-    this._build()
-    return true
+    if (isBoolean(strict)) this._strict = strict;
+    else if (isEqual(this._currentDescriptor, this._nextDescriptor)) return false;
+    this._currentDescriptor = cloneDeep(this._nextDescriptor);
+    this._build();
+    return true;
   }
 
   /**
@@ -309,60 +309,60 @@ class Schema {
    */
   save(target) {
     return new Promise((resolve, reject) => {
-      const contents = JSON.stringify(this._currentDescriptor, null, 4)
-      fs.writeFile(target, contents, (error) => (!error ? resolve() : reject(error)))
-    })
+      const contents = JSON.stringify(this._currentDescriptor, null, 4);
+      fs.writeFile(target, contents, (error) => (!error ? resolve() : reject(error)));
+    });
   }
 
   // Private
 
   constructor(descriptor = {}, { strict = false, caseInsensitiveHeaders = false } = {}) {
     // Set attributes
-    this._strict = strict
-    this._caseInsensitiveHeaders = caseInsensitiveHeaders
-    this._currentDescriptor = cloneDeep(descriptor)
-    this._nextDescriptor = cloneDeep(descriptor)
-    this._profile = new Profile('table-schema')
-    this._errors = []
-    this._fields = []
+    this._strict = strict;
+    this._caseInsensitiveHeaders = caseInsensitiveHeaders;
+    this._currentDescriptor = cloneDeep(descriptor);
+    this._nextDescriptor = cloneDeep(descriptor);
+    this._profile = new Profile('table-schema');
+    this._errors = [];
+    this._fields = [];
 
     // Build instance
-    this._build()
+    this._build();
   }
 
   _build() {
     // Process descriptor
-    this._currentDescriptor = helpers.expandSchemaDescriptor(this._currentDescriptor)
-    this._nextDescriptor = cloneDeep(this._currentDescriptor)
+    this._currentDescriptor = helpers.expandSchemaDescriptor(this._currentDescriptor);
+    this._nextDescriptor = cloneDeep(this._currentDescriptor);
 
     // Validate descriptor
-    this._errors = []
-    const { valid, errors } = this._profile.validate(this._currentDescriptor)
+    this._errors = [];
+    const { valid, errors } = this._profile.validate(this._currentDescriptor);
     if (!valid) {
-      this._errors = errors
+      this._errors = errors;
       if (this._strict) {
-        const message = `There are ${errors.length} validation errors (see 'error.errors')`
-        throw new TableSchemaError(message, errors)
+        const message = `There are ${errors.length} validation errors (see 'error.errors')`;
+        throw new TableSchemaError(message, errors);
       }
     }
 
     // Populate fields
-    this._fields = []
+    this._fields = [];
     for (let field of this._currentDescriptor.fields || []) {
-      const missingValues = this._currentDescriptor.missingValues
+      const missingValues = this._currentDescriptor.missingValues;
       try {
-        field = new Field(field, { missingValues })
+        field = new Field(field, { missingValues });
       } catch (error) {
-        field = false
+        field = false;
       }
-      this._fields.push(field)
+      this._fields.push(field);
     }
   }
 }
 
 // Internal
 
-const INSPECT_VALUE_YEAR_PATTERN = /[12]\d{3}/
+const INSPECT_VALUE_YEAR_PATTERN = /[12]\d{3}/;
 const INSPECT_VALUE_DATE_TIME_MAPPING = {
   // TODO:
   // Decide on resonable amount of heuristics here
@@ -372,7 +372,7 @@ const INSPECT_VALUE_DATE_TIME_MAPPING = {
   '%m/%d/%y': 'date',
   '%m/%d/%Y': 'date',
   '%H:%M': 'time',
-}
+};
 const INSPECT_VALUE_GUESS_ORDER = [
   // This format is too broad
   // {type: 'year', format: 'default'},
@@ -402,7 +402,7 @@ const INSPECT_VALUE_GUESS_ORDER = [
   { type: 'string', format: 'uri' },
   { type: 'string', format: 'default' },
   { type: 'any', format: 'default' },
-]
+];
 
 function inspectValue(value) {
   // Heuristic
@@ -410,24 +410,24 @@ function inspectValue(value) {
     // Guess year
     if (value.length === 4) {
       if (value.match(INSPECT_VALUE_YEAR_PATTERN)) {
-        return { type: 'year', format: 'default' }
+        return { type: 'year', format: 'default' };
       }
     }
 
     // Guess date/time
     for (const [format, type] of Object.entries(INSPECT_VALUE_DATE_TIME_MAPPING)) {
       if (moment(value, helpers.convertDatetimeFormatFromFDtoJS(format), true).isValid()) {
-        return { type, format }
+        return { type, format };
       }
     }
   }
 
   // Automatic
   for (const { type, format } of INSPECT_VALUE_GUESS_ORDER) {
-    const cast = types[`cast${upperFirst(type)}`]
-    const result = cast(format, value)
-    if (result === config.ERROR) continue
-    return { type, format }
+    const cast = types[`cast${upperFirst(type)}`];
+    const result = cast(format, value);
+    if (result === config.ERROR) continue;
+    return { type, format };
   }
 }
 
@@ -435,4 +435,4 @@ function inspectValue(value) {
 
 module.exports = {
   Schema,
-}
+};

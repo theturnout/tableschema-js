@@ -2,16 +2,16 @@
 
 function checkPattern(constraint, value) {
   if (value === null) {
-    return true
+    return true;
   }
-  const regex = new RegExp(constraint)
-  const match = regex.exec(value)
+  const regex = new RegExp(constraint);
+  const match = regex.exec(value);
   if (match) {
-    return true
+    return true;
   }
-  return false
+  return false;
 }
 
 module.exports = {
   checkPattern,
-}
+};

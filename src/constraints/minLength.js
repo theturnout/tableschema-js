@@ -2,14 +2,14 @@
 
 function checkMinLength(constraint, value) {
   if (value === null) {
-    return true
+    return true;
   }
   if (value.length >= constraint) {
-    return true
+    return true;
   }
-  return false
+  return false;
 }
 
 module.exports = {
   checkMinLength,
-}
+};

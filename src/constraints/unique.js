@@ -1,9 +1,9 @@
 // Module API
 
 function checkUnique() {
-  return true
+  return true;
 }
 
 module.exports = {
   checkUnique,
-}
+};

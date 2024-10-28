@@ -1,7 +1,7 @@
 /* eslint quote-props: off */
-const { assert } = require('chai')
-const { ERROR } = require('../../src/config')
-const types = require('../../src/types')
+const { assert } = require('chai');
+const { ERROR } = require('../../src/config');
+const types = require('../../src/types');
 
 // Constants
 
@@ -26,15 +26,15 @@ const TESTS = [
   ['topojson', 1, ERROR],
   ['topojson', '3.14', ERROR],
   ['topojson', '', ERROR],
-]
+];
 
 // Tests
 
 describe('castGeojson', () => {
   TESTS.forEach((test) => {
-    const [format, value, result] = test
+    const [format, value, result] = test;
     it(`format "${format}" should cast "${value}" to "${result}"`, () => {
-      assert.deepEqual(types.castGeojson(format, value), result)
-    })
-  })
-})
+      assert.deepEqual(types.castGeojson(format, value), result);
+    });
+  });
+});

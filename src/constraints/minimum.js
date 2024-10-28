@@ -2,14 +2,14 @@
 
 function checkMinimum(constraint, value) {
   if (value === null) {
-    return true
+    return true;
   }
   if (value >= constraint) {
-    return true
+    return true;
   }
-  return false
+  return false;
 }
 
 module.exports = {
   checkMinimum,
-}
+};

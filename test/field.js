@@ -1,54 +1,54 @@
-const { assert } = require('chai')
-const { Field } = require('../src')
-const { catchError } = require('./helpers')
+const { assert } = require('chai');
+const { Field } = require('../src');
+const { catchError } = require('./helpers');
 
 // Constants
 
 const DESCRIPTOR_MIN = {
   name: 'height',
   type: 'number',
-}
+};
 
 // Tests
 
 describe('Field', () => {
   it('should get correct instance', () => {
-    const field = new Field(DESCRIPTOR_MIN)
-    assert.equal(field.name, 'height')
-    assert.equal(field.format, 'default')
-    assert.equal(field.type, 'number')
-  })
+    const field = new Field(DESCRIPTOR_MIN);
+    assert.equal(field.name, 'height');
+    assert.equal(field.format, 'default');
+    assert.equal(field.type, 'number');
+  });
 
   it('should return true on test', () => {
-    const field = new Field(DESCRIPTOR_MIN)
-    assert.isTrue(field.testValue(1))
-  })
+    const field = new Field(DESCRIPTOR_MIN);
+    assert.isTrue(field.testValue(1));
+  });
 
   it('should return false on test', () => {
-    const field = new Field(DESCRIPTOR_MIN)
-    assert.isFalse(field.testValue('string'))
-  })
+    const field = new Field(DESCRIPTOR_MIN);
+    assert.isFalse(field.testValue('string'));
+  });
 
   it('should cast value', () => {
-    const field = new Field(DESCRIPTOR_MIN)
-    assert.equal(field.castValue(1), 1)
-  })
+    const field = new Field(DESCRIPTOR_MIN);
+    assert.equal(field.castValue(1), 1);
+  });
 
   it('should fail to cast value', () => {
-    const field = new Field(DESCRIPTOR_MIN)
+    const field = new Field(DESCRIPTOR_MIN);
     assert.throws(() => {
-      field.castValue('string')
-    }, Error)
-  })
+      field.castValue('string');
+    }, Error);
+  });
 
   it('should expand descriptor by defaults', () => {
-    const field = new Field({ name: 'name' })
+    const field = new Field({ name: 'name' });
     assert.deepEqual(field.descriptor, {
       name: 'name',
       type: 'string',
       format: 'default',
-    })
-  })
+    });
+  });
 
   it('should parse descriptor with "enum" constraint', () => {
     const field = new Field({
@@ -57,10 +57,10 @@ describe('Field', () => {
       constraints: {
         enum: ['active', 'inactive'],
       },
-    })
-    assert.equal(field.testValue('active'), true)
-    assert.equal(field.testValue('inactive'), true)
-  })
+    });
+    assert.equal(field.testValue('active'), true);
+    assert.equal(field.testValue('inactive'), true);
+  });
 
   it('should parse descriptor with "minimum" constraint', () => {
     const field = new Field({
@@ -69,10 +69,10 @@ describe('Field', () => {
       constraints: {
         minimum: 100,
       },
-    })
-    assert.equal(field.testValue(200), true)
-    assert.equal(field.testValue(50), false)
-  })
+    });
+    assert.equal(field.testValue(200), true);
+    assert.equal(field.testValue(50), false);
+  });
 
   it('should parse descriptor with "maximum" constraint', () => {
     const field = new Field({
@@ -81,39 +81,39 @@ describe('Field', () => {
       constraints: {
         maximum: 100,
       },
-    })
-    assert.equal(field.testValue(50), true)
-    assert.equal(field.testValue(200), false)
-  })
+    });
+    assert.equal(field.testValue(50), true);
+    assert.equal(field.testValue(200), false);
+  });
 
   it('should throw an error on incompatible value', async () => {
-    const field = new Field({ name: 'column', type: 'integer' })
-    const error = await catchError(field.castValue.bind(field), 'bad-value')
-    assert.include(error.message, 'value "bad-value"')
-    assert.include(error.message, 'column "column"')
-    assert.include(error.message, 'type "integer"')
-    assert.include(error.message, 'format "default"')
-  })
+    const field = new Field({ name: 'column', type: 'integer' });
+    const error = await catchError(field.castValue.bind(field), 'bad-value');
+    assert.include(error.message, 'value "bad-value"');
+    assert.include(error.message, 'column "column"');
+    assert.include(error.message, 'type "integer"');
+    assert.include(error.message, 'format "default"');
+  });
 
   it('should throw an error on incompatible constraint', async () => {
-    const field = new Field({ name: 'column', type: 'integer', constraints: { minimum: 1 } })
-    const error = await catchError(field.castValue.bind(field), 0)
-    assert.include(error.message, 'value "0"')
-    assert.include(error.message, '"minimum" constraint')
-    assert.include(error.message, 'column "column"')
-  })
+    const field = new Field({ name: 'column', type: 'integer', constraints: { minimum: 1 } });
+    const error = await catchError(field.castValue.bind(field), 0);
+    assert.include(error.message, 'value "0"');
+    assert.include(error.message, '"minimum" constraint');
+    assert.include(error.message, 'column "column"');
+  });
 
-  const TESTS = ['minimum', 'maximum']
+  const TESTS = ['minimum', 'maximum'];
   TESTS.forEach((constraint) => {
     it(`should throw correctly on bad ${constraint} constraint (#117)`, async () => {
       try {
-        const constraints = { [constraint]: 'bad' }
-        const field = new Field({ name: 'column', type: 'integer', constraints })
-        assert(!field)
+        const constraints = { [constraint]: 'bad' };
+        const field = new Field({ name: 'column', type: 'integer', constraints });
+        assert(!field);
       } catch (error) {
-        assert.include(error.message, 'value "bad" in column "column"')
-        assert.include(error.message, 'is not type "integer"')
+        assert.include(error.message, 'value "bad" in column "column"');
+        assert.include(error.message, 'is not type "integer"');
       }
-    })
-  })
-})
+    });
+  });
+});

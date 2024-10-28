@@ -1,4 +1,4 @@
-const { Schema } = require('./schema')
+const { Schema } = require('./schema');
 
 // Module API
 
@@ -12,12 +12,12 @@ const { Schema } = require('./schema')
  * @returns {Object} returns `{valid, errors}` object
  */
 async function validate(descriptor) {
-  const { valid, errors } = await Schema.load(descriptor)
-  return { valid, errors }
+  const { valid, errors } = await Schema.load(descriptor);
+  return { valid, errors };
 }
 
 // System
 
 module.exports = {
   validate,
-}
+};
