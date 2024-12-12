@@ -195,22 +195,21 @@ class Field {
             `Enum constraint "${constraint}" is not valid: ${error.message}`
           );
         }
-      }
-
-      // Cast maximum/minimum constraint
-      if (['maximum', 'minimum'].includes(name)) {
-        try {
-          castConstraint = cast(constraint);
-        } catch (error) {
-          throw new TableSchemaError(
-            `Maximum/minimum constraint "${constraint}" is not valid: ${error.message}`
-          );
+        // Cast maximum/minimum constraint
+      } else if (['maximum', 'minimum'].includes(name)) {
+          try {
+            castConstraint = cast(constraint);
+          } catch (error) {
+            throw new TableSchemaError(
+              `Maximum/minimum constraint "${constraint}" is not valid: ${error.message}`
+            );
+          }
+          if (func) checks[name] = bind(func, null, castConstraint);
+        } else {
+          if (func) checks[name] = bind(func, null, castConstraint);
         }
-
-        if (func) checks[name] = bind(func, null, castConstraint);
       }
-    }
-    return checks;
+      return checks;
   }
 }
 
