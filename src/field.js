@@ -110,7 +110,7 @@ class Field {
       if (castValue === config.ERROR) {
         throw new TableSchemaError(
           `The value "${value}" in column "${this.name}" ` +
-            `is not type "${this.type}" and format "${this.format}"`
+          `is not type "${this.type}" and format "${this.format}"`
         );
       }
     }
@@ -125,7 +125,7 @@ class Field {
         if (!passed) {
           throw new TableSchemaError(
             `The value "${value}" does not conform ` +
-              `to the "${name}" constraint for column "${this.name}"`
+            `to the "${name}" constraint for column "${this.name}"`
           );
         }
       }
@@ -176,12 +176,20 @@ class Field {
     const cast = bind(this.castValue, this, bind.placeholder, { constraints: false });
     for (const [name, constraint] of Object.entries(this.constraints)) {
       let castConstraint = constraint;
+      const func = constraints[`check${upperFirst(name)}`];
 
       // Cast enum constraint
       if (['enum'].includes(name)) {
         try {
           if (!Array.isArray(constraint)) throw new TableSchemaError('Array is required');
-          castConstraint = constraint.map(cast);
+          // runs for each element in the enum, passing the value of the enum into the cast function
+          if (this.descriptor.type === 'array') {
+            // skip check, individual enum values are not arrays
+            if (func) checks[name] = bind(func, null, constraint);
+          } else {
+            castConstraint = constraint.map(cast);
+            if (func) checks[name] = bind(func, null, castConstraint);
+          }
         } catch (error) {
           throw new TableSchemaError(
             `Enum constraint "${constraint}" is not valid: ${error.message}`
@@ -198,11 +206,9 @@ class Field {
             `Maximum/minimum constraint "${constraint}" is not valid: ${error.message}`
           );
         }
-      }
 
-      // Get check function
-      const func = constraints[`check${upperFirst(name)}`];
-      if (func) checks[name] = bind(func, null, castConstraint);
+        if (func) checks[name] = bind(func, null, castConstraint);
+      }
     }
     return checks;
   }
