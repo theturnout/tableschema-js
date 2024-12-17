@@ -1,11 +1,11 @@
-const { assert } = require('chai');
-const { ERROR } = require('../../src/config');
-const types = require('../../src/types');
+const { assert } = require('chai')
+const { ERROR } = require('../../src/config')
+const types = require('../../src/types')
 
 // Helpers
 
 function datetime(year, month, day, hour = 0, minute = 0, second = 0) {
-  return new Date(year, month - 1, day, hour, minute, second);
+  return new Date(year, month - 1, day, hour, minute, second)
 }
 
 // Constants
@@ -36,15 +36,15 @@ const TESTS = [
   ['fmt:%d/%m/%y %H:%M', 'invalid', ERROR],
   ['fmt:%d/%m/%y %H:%M', true, ERROR],
   ['fmt:%d/%m/%y %H:%M', '', ERROR],
-];
+]
 
 // Tests
 
 describe('castDatetime', () => {
   TESTS.forEach((test) => {
-    const [format, value, result] = test;
+    const [format, value, result] = test
     it(`format "${format}" should cast "${value}" to "${result}"`, () => {
-      assert.deepEqual(types.castDatetime(format, value), result);
-    });
-  });
-});
+      assert.deepEqual(types.castDatetime(format, value), result)
+    })
+  })
+})

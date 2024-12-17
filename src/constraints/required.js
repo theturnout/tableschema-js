@@ -2,11 +2,11 @@
 
 function checkRequired(constraint, value) {
   if (!(constraint && (value === null || value === undefined))) {
-    return true;
+    return true
   }
-  return false;
+  return false
 }
 
 module.exports = {
   checkRequired,
-};
+}

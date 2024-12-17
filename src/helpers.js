@@ -1,72 +1,72 @@
-const fs = require('fs');
-const axios = require('axios');
-const cloneDeep = require('lodash/cloneDeep');
-const isPlainObject = require('lodash/isPlainObject');
-const { TableSchemaError } = require('./errors');
-const config = require('./config');
+const fs = require('fs')
+const axios = require('axios')
+const cloneDeep = require('lodash/cloneDeep')
+const isPlainObject = require('lodash/isPlainObject')
+const { TableSchemaError } = require('./errors')
+const config = require('./config')
 
 // Retrieve descriptor
 
 async function retrieveDescriptor(descriptor) {
   // Inline
   if (isPlainObject(descriptor)) {
-    descriptor = cloneDeep(descriptor);
+    descriptor = cloneDeep(descriptor)
 
     // Remote
   } else if (isRemotePath(descriptor)) {
-    const res = await axios.get(descriptor);
-    descriptor = res.data;
+    const res = await axios.get(descriptor)
+    descriptor = res.data
 
     // Loading error
     if (res.status >= 400) {
-      throw new TableSchemaError(`Can't load descriptor at "${descriptor}"`);
+      throw new TableSchemaError(`Can't load descriptor at "${descriptor}"`)
     }
 
     // Local
   } else {
     // Browser error
     if (config.IS_BROWSER) {
-      throw new TableSchemaError('Local paths are not supported in browser');
+      throw new TableSchemaError('Local paths are not supported in browser')
     }
 
     // Load/parse data
     try {
       descriptor = await new Promise((resolve, reject) => {
         fs.readFile(descriptor, 'utf-8', (error, data) => {
-          if (error) reject(error);
+          if (error) reject(error)
           try {
-            resolve(JSON.parse(data));
+            resolve(JSON.parse(data))
           } catch (error) {
-            reject(error);
+            reject(error)
           }
-        });
-      });
+        })
+      })
 
       // Load/parse erorr
     } catch (error) {
-      throw new TableSchemaError(`Can't load descriptor at "${descriptor}"`);
+      throw new TableSchemaError(`Can't load descriptor at "${descriptor}"`)
     }
   }
 
-  return descriptor;
+  return descriptor
 }
 
 // Expand descriptor
 
 function expandSchemaDescriptor(descriptor) {
   for (const field of descriptor.fields || []) {
-    expandFieldDescriptor(field);
+    expandFieldDescriptor(field)
   }
-  if (!descriptor.missingValues) descriptor.missingValues = config.DEFAULT_MISSING_VALUES;
-  return descriptor;
+  if (!descriptor.missingValues) descriptor.missingValues = config.DEFAULT_MISSING_VALUES
+  return descriptor
 }
 
 function expandFieldDescriptor(descriptor) {
   if (descriptor instanceof Object) {
-    if (!descriptor.type) descriptor.type = config.DEFAULT_FIELD_TYPE;
-    if (!descriptor.format) descriptor.format = config.DEFAULT_FIELD_FORMAT;
+    if (!descriptor.type) descriptor.type = config.DEFAULT_FIELD_TYPE
+    if (!descriptor.format) descriptor.format = config.DEFAULT_FIELD_FORMAT
   }
-  return descriptor;
+  return descriptor
 }
 
 // Date/time conversion
@@ -80,9 +80,9 @@ function expandFieldDescriptor(descriptor) {
  */
 function convertDatetimeFormatFromFDtoJS(formatStr) {
   for (const key in DATETIME_FORMATS_MAP_FROM_FD_TO_JS) {
-    formatStr = formatStr.split(key).join(DATETIME_FORMATS_MAP_FROM_FD_TO_JS[key]);
+    formatStr = formatStr.split(key).join(DATETIME_FORMATS_MAP_FROM_FD_TO_JS[key])
   }
-  return formatStr;
+  return formatStr
 }
 
 /* Key: Python format
@@ -113,13 +113,13 @@ const DATETIME_FORMATS_MAP_FROM_FD_TO_JS = Object.freeze({
   '%Z': 'z', // Time zone name: ((empty), UTC, EST, CST) (empty string if the object is naive).
   '%z': 'ZZ', // UTC offset in the form +HHMM or -HHMM: ((empty), +0000, -0400, +1030) Empty string if the the object is naive.
   '%%': '%', // A literal '%' character: (%)
-});
+})
 
 // Miscellaneous
 
 function isRemotePath(path) {
   // TODO: improve implementation
-  return path.startsWith('http');
+  return path.startsWith('http')
 }
 
 // System
@@ -130,4 +130,4 @@ module.exports = {
   expandFieldDescriptor,
   convertDatetimeFormatFromFDtoJS,
   isRemotePath,
-};
+}

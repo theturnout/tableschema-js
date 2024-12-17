@@ -1,26 +1,26 @@
-const isArray = require('lodash/isArray');
-const isString = require('lodash/isString');
-const { ERROR } = require('../config');
+const isArray = require('lodash/isArray')
+const isString = require('lodash/isString')
+const { ERROR } = require('../config')
 
 // Module API
 
 function castArray(format, value) {
   if (!isArray(value)) {
     if (!isString(value)) {
-      return ERROR;
+      return ERROR
     }
     try {
-      value = JSON.parse(value);
+      value = JSON.parse(value)
     } catch (error) {
-      return ERROR;
+      return ERROR
     }
     if (!isArray(value)) {
-      return ERROR;
+      return ERROR
     }
   }
-  return value;
+  return value
 }
 
 module.exports = {
   castArray,
-};
+}

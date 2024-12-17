@@ -4,16 +4,15 @@ const isArray = require('lodash/isArray')
 
 function checkEnum(constraint, value) {
   if (value === null) {
-    return true;
+    return true
   }
   if (!isArray(value)) {
-    return (constraint.includes(value))
+    return constraint.includes(value)
   } else {
-    return (value.every(o => constraint.indexOf(o) !== -1))
+    return value.every((o) => constraint.indexOf(o) !== -1)
   }
-
 }
 
 module.exports = {
   checkEnum,
-};
+}

@@ -1,12 +1,12 @@
-const moment = require('moment');
-const { assert } = require('chai');
-const { ERROR } = require('../../src/config');
-const types = require('../../src/types');
+const moment = require('moment')
+const { assert } = require('chai')
+const { ERROR } = require('../../src/config')
+const types = require('../../src/types')
 
 // Helpers
 
 function time(hour, minute = 0, second = 0) {
-  return moment(`${hour}:${minute}:${second}`, 'h:m:s', false).toDate();
+  return moment(`${hour}:${minute}:${second}`, 'h:m:s', false).toDate()
 }
 
 // Constants
@@ -46,15 +46,15 @@ const TESTS = [
   ['fmt:%H:%M', 'invalid', ERROR],
   ['fmt:%H:%M', true, ERROR],
   ['fmt:%H:%M', '', ERROR],
-];
+]
 
 // Tests
 
 describe('castTime', () => {
   TESTS.forEach((test) => {
-    const [format, value, result] = test;
+    const [format, value, result] = test
     it(`format "${format}" should cast "${value}" to "${result}"`, () => {
-      assert.deepEqual(types.castTime(format, value), result);
-    });
-  });
-});
+      assert.deepEqual(types.castTime(format, value), result)
+    })
+  })
+})

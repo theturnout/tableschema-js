@@ -1,9 +1,9 @@
 // Module API
 
 function castAny(format, value) {
-  return value;
+  return value
 }
 
 module.exports = {
   castAny,
-};
+}

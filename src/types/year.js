@@ -1,34 +1,34 @@
-const isNaN = require('lodash/isNaN');
-const isString = require('lodash/isString');
-const isInteger = require('lodash/isInteger');
-const { ERROR } = require('../config');
+const isNaN = require('lodash/isNaN')
+const isString = require('lodash/isString')
+const isInteger = require('lodash/isInteger')
+const { ERROR } = require('../config')
 
 // Module API
 
 function castYear(format, value) {
   if (!isInteger(value)) {
     if (!isString(value)) {
-      return ERROR;
+      return ERROR
     }
     if (value.length !== 4) {
-      return ERROR;
+      return ERROR
     }
     try {
-      const result = parseInt(value, 10);
+      const result = parseInt(value, 10)
       if (isNaN(result) || result.toString() !== value) {
-        return ERROR;
+        return ERROR
       }
-      value = result;
+      value = result
     } catch (error) {
-      return ERROR;
+      return ERROR
     }
   }
   if (value < 0 || value > 9999) {
-    return ERROR;
+    return ERROR
   }
-  return value;
+  return value
 }
 
 module.exports = {
   castYear,
-};
+}

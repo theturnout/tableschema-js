@@ -1,4 +1,4 @@
-const { Table } = require('./table');
+const { Table } = require('./table')
 
 // Module API
 
@@ -17,12 +17,12 @@ const { Table } = require('./table');
  * @returns {Object} returns schema descriptor
  */
 async function infer(source, options = {}) {
-  const descriptor = await (await Table.load(source, options)).infer({ limit: options.limit });
-  return descriptor;
+  const descriptor = await (await Table.load(source, options)).infer({ limit: options.limit })
+  return descriptor
 }
 
 // System
 
 module.exports = {
   infer,
-};
+}

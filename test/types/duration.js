@@ -1,7 +1,7 @@
-const moment = require('moment');
-const { assert } = require('chai');
-const { ERROR } = require('../../src/config');
-const types = require('../../src/types');
+const moment = require('moment')
+const { assert } = require('chai')
+const { ERROR } = require('../../src/config')
+const types = require('../../src/types')
 
 // Constants
 
@@ -23,15 +23,15 @@ const TESTS = [
   ['default', '', ERROR],
   ['default', [], ERROR],
   ['default', {}, ERROR],
-];
+]
 
 // Tests
 
 describe('castDuration', () => {
   TESTS.forEach((test) => {
-    const [format, value, result] = test;
+    const [format, value, result] = test
     it(`format "${format}" should cast "${value}" to "${result}"`, () => {
-      assert.deepEqual(types.castDuration(format, value), result);
-    });
-  });
-});
+      assert.deepEqual(types.castDuration(format, value), result)
+    })
+  })
+})

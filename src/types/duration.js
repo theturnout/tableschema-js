@@ -1,29 +1,29 @@
-const moment = require('moment');
-const isString = require('lodash/isString');
-const { ERROR } = require('../config');
+const moment = require('moment')
+const isString = require('lodash/isString')
+const { ERROR } = require('../config')
 
 // Module API
 
 function castDuration(format, value) {
   if (!moment.isDuration(value)) {
     if (!isString(value)) {
-      return ERROR;
+      return ERROR
     }
     try {
       if (!value.startsWith('P')) {
-        return ERROR;
+        return ERROR
       }
-      value = moment.duration(value);
+      value = moment.duration(value)
       if (!value.as('milliseconds')) {
-        return ERROR;
+        return ERROR
       }
     } catch (error) {
-      return ERROR;
+      return ERROR
     }
   }
-  return value;
+  return value
 }
 
 module.exports = {
   castDuration,
-};
+}

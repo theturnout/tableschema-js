@@ -1,6 +1,6 @@
-const { assert } = require('chai');
-const { ERROR } = require('../../src/config');
-const types = require('../../src/types');
+const { assert } = require('chai')
+const { ERROR } = require('../../src/config')
+const types = require('../../src/types')
 
 // Constants
 
@@ -34,15 +34,15 @@ const TESTS = [
   // https://travis-ci.org/github/frictionlessdata/tableschema-js/jobs/729701010
   // ['binary', '', ERROR],
   ['binary', 0, ERROR],
-];
+]
 
 // Tests
 
 describe('castString', () => {
   TESTS.forEach((test) => {
-    const [format, value, result] = test;
+    const [format, value, result] = test
     it(`format "${format}" should cast "${value}" to "${result}"`, () => {
-      assert.deepEqual(types.castString(format, value), result);
-    });
-  });
-});
+      assert.deepEqual(types.castString(format, value), result)
+    })
+  })
+})

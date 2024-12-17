@@ -1,12 +1,12 @@
-const bind = require('lodash/bind');
-const isArray = require('lodash/isArray');
-const cloneDeep = require('lodash/cloneDeep');
-const upperFirst = require('lodash/upperFirst');
-const { TableSchemaError } = require('./errors');
-const constraints = require('./constraints');
-const helpers = require('./helpers');
-const config = require('./config');
-const types = require('./types');
+const bind = require('lodash/bind')
+const isArray = require('lodash/isArray')
+const cloneDeep = require('lodash/cloneDeep')
+const upperFirst = require('lodash/upperFirst')
+const { TableSchemaError } = require('./errors')
+const constraints = require('./constraints')
+const helpers = require('./helpers')
+const config = require('./config')
+const types = require('./types')
 
 // Module API
 
@@ -26,14 +26,14 @@ class Field {
    */
   constructor(descriptor, { missingValues = config.DEFAULT_MISSING_VALUES } = {}) {
     // Process descriptor
-    descriptor = cloneDeep(descriptor);
-    descriptor = helpers.expandFieldDescriptor(descriptor);
+    descriptor = cloneDeep(descriptor)
+    descriptor = helpers.expandFieldDescriptor(descriptor)
 
     // Set attributes
-    this._descriptor = descriptor;
-    this._missingValues = missingValues;
-    this._castFunction = this._getCastFunction();
-    this._checkFunctions = this._getCheckFunctions();
+    this._descriptor = descriptor
+    this._missingValues = missingValues
+    this._castFunction = this._getCastFunction()
+    this._checkFunctions = this._getCheckFunctions()
   }
 
   /**
@@ -42,7 +42,7 @@ class Field {
    * @returns {string}
    */
   get name() {
-    return this._descriptor.name;
+    return this._descriptor.name
   }
 
   /**
@@ -51,7 +51,7 @@ class Field {
    * @returns {string}
    */
   get type() {
-    return this._descriptor.type;
+    return this._descriptor.type
   }
 
   /**
@@ -60,7 +60,7 @@ class Field {
    * @returns {string}
    */
   get format() {
-    return this._descriptor.format;
+    return this._descriptor.format
   }
 
   /**
@@ -69,7 +69,7 @@ class Field {
    * @returns {boolean}
    */
   get required() {
-    return (this._descriptor.constraints || {}).required === true;
+    return (this._descriptor.constraints || {}).required === true
   }
 
   /**
@@ -78,7 +78,7 @@ class Field {
    * @returns {Object}
    */
   get constraints() {
-    return this._descriptor.constraints || {};
+    return this._descriptor.constraints || {}
   }
 
   /**
@@ -87,7 +87,7 @@ class Field {
    * @returns {Object}
    */
   get descriptor() {
-    return this._descriptor;
+    return this._descriptor
   }
 
   /**
@@ -100,18 +100,18 @@ class Field {
   castValue(value, { constraints = true } = {}) {
     // Null value
     if (this._missingValues.includes(value)) {
-      value = null;
+      value = null
     }
 
     // Cast value
-    let castValue = value;
+    let castValue = value
     if (value !== null) {
-      castValue = this._castFunction(value);
+      castValue = this._castFunction(value)
       if (castValue === config.ERROR) {
         throw new TableSchemaError(
           `The value "${value}" in column "${this.name}" ` +
-          `is not type "${this.type}" and format "${this.format}"`
-        );
+            `is not type "${this.type}" and format "${this.format}"`
+        )
       }
     }
 
@@ -119,19 +119,19 @@ class Field {
     if (constraints) {
       for (const [name, check] of Object.entries(this._checkFunctions)) {
         if (isArray(constraints)) {
-          if (!constraints.includes(name)) continue;
+          if (!constraints.includes(name)) continue
         }
-        const passed = check(castValue);
+        const passed = check(castValue)
         if (!passed) {
           throw new TableSchemaError(
             `The value "${value}" does not conform ` +
-            `to the "${name}" constraint for column "${this.name}"`
-          );
+              `to the "${name}" constraint for column "${this.name}"`
+          )
         }
       }
     }
 
-    return castValue;
+    return castValue
   }
 
   /**
@@ -143,73 +143,73 @@ class Field {
    */
   testValue(value, { constraints = true } = {}) {
     try {
-      this.castValue(value, { constraints });
+      this.castValue(value, { constraints })
     } catch (error) {
-      return false;
+      return false
     }
-    return true;
+    return true
   }
 
   // Private
 
   _getCastFunction() {
-    const options = {};
+    const options = {}
 
     // Get cast options
     for (const key of ['decimalChar', 'groupChar', 'bareNumber', 'trueValues', 'falseValues']) {
-      const value = this.descriptor[key];
+      const value = this.descriptor[key]
       if (value !== undefined) {
-        options[key] = value;
+        options[key] = value
       }
     }
 
     // Get cast function
-    const func = types[`cast${upperFirst(this.type)}`];
-    if (!func) throw new TableSchemaError(`Not supported field type "${this.type}"`);
-    const cast = bind(func, null, this.format, bind.placeholder, options);
+    const func = types[`cast${upperFirst(this.type)}`]
+    if (!func) throw new TableSchemaError(`Not supported field type "${this.type}"`)
+    const cast = bind(func, null, this.format, bind.placeholder, options)
 
-    return cast;
+    return cast
   }
 
   _getCheckFunctions() {
-    const checks = {};
-    const cast = bind(this.castValue, this, bind.placeholder, { constraints: false });
+    const checks = {}
+    const cast = bind(this.castValue, this, bind.placeholder, { constraints: false })
     for (const [name, constraint] of Object.entries(this.constraints)) {
-      let castConstraint = constraint;
-      const func = constraints[`check${upperFirst(name)}`];
+      let castConstraint = constraint
+      const func = constraints[`check${upperFirst(name)}`]
 
       // Cast enum constraint
       if (['enum'].includes(name)) {
         try {
-          if (!Array.isArray(constraint)) throw new TableSchemaError('Array is required');
+          if (!Array.isArray(constraint)) throw new TableSchemaError('Array is required')
           // runs for each element in the enum, passing the value of the enum into the cast function
           if (this.descriptor.type === 'array') {
             // skip check, individual enum values are not arrays
-            if (func) checks[name] = bind(func, null, constraint);
+            if (func) checks[name] = bind(func, null, constraint)
           } else {
-            castConstraint = constraint.map(cast);
-            if (func) checks[name] = bind(func, null, castConstraint);
+            castConstraint = constraint.map(cast)
+            if (func) checks[name] = bind(func, null, castConstraint)
           }
         } catch (error) {
           throw new TableSchemaError(
             `Enum constraint "${constraint}" is not valid: ${error.message}`
-          );
+          )
         }
         // Cast maximum/minimum constraint
       } else if (['maximum', 'minimum'].includes(name)) {
-          try {
-            castConstraint = cast(constraint);
-          } catch (error) {
-            throw new TableSchemaError(
-              `Maximum/minimum constraint "${constraint}" is not valid: ${error.message}`
-            );
-          }
-          if (func) checks[name] = bind(func, null, castConstraint);
-        } else {
-          if (func) checks[name] = bind(func, null, castConstraint);
+        try {
+          castConstraint = cast(constraint)
+        } catch (error) {
+          throw new TableSchemaError(
+            `Maximum/minimum constraint "${constraint}" is not valid: ${error.message}`
+          )
         }
+        if (func) checks[name] = bind(func, null, castConstraint)
+      } else {
+        if (func) checks[name] = bind(func, null, castConstraint)
       }
-      return checks;
+    }
+    return checks
   }
 }
 
@@ -217,4 +217,4 @@ class Field {
 
 module.exports = {
   Field,
-};
+}

@@ -1,17 +1,17 @@
 // Helpers
 
 async function catchError(func, ...args) {
-  let error;
+  let error
   try {
-    await func(...args);
+    await func(...args)
   } catch (exception) {
-    error = exception;
+    error = exception
   }
-  return error;
+  return error
 }
 
 // System
 
 module.exports = {
   catchError,
-};
+}
