@@ -2,7 +2,7 @@
 module.exports = [
     {
         rules: {
-            semi: "error",
+            semi: ["error", "never"],
             "prefer-const": "error"
         }
     }

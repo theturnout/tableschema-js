@@ -443,7 +443,7 @@ function createCsvDelimiterDetector(csvParser) {
 
   detector.on('data', (chunk) => {
     if (!done) {
-      let sniffed = sniffer.sniff(chunk.toString())
+      const sniffed = sniffer.sniff(chunk.toString())
       let delimiter = (sniffed && sniffed.delimiter) || ','
 
       if (delimiter.match(/[a-zA-Z0-9+]/)) {

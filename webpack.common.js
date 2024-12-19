@@ -39,13 +39,18 @@ module.exports = {
       resourceRegExp: /^\.\/locale$/,
       contextRegExp: /moment$/
     }),
+    new webpack.DefinePlugin({'process.env.USER_ENV': JSON.stringify('browser')}),
+      new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+      process: 'process/browser',
+    }),
   ],
   resolve: {
     fallback: {
-      "buffer": require.resolve("buffer"),
+      "buffer": require.resolve("buffer/"),
       "stream": require.resolve("stream-browserify"),
-      "fs": require.resolve("fs"),
+      "fs": false// require.resolve("fs"),
     }
   },
-  target: "node"
+  // target: ["web", "es6"]
 }
